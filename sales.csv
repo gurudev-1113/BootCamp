@@ -1,0 +1,51 @@
+Customer_ID,Age,City,Spending,Visits_Per_Month
+1,25,New York,500,2
+2,30,Los Angeles,700,4
+3,,Chicago,450,3
+4,45,Chicago,1500,10
+5,30,New York,,5
+6,22,Los Angeles,600,2
+7,120,New York,5000,1
+8,35,Houston,800,4
+9,28,Miami,300,1
+10,50,Chicago,1200,8
+11,41,New York,900,5
+12,,Los Angeles,450,3
+13,29,Houston,550,2
+14,33,Miami,750,5
+15,26,Chicago,,4
+16,55,New York,1600,9
+17,31,Los Angeles,850,6
+18,48,Houston,1100,7
+19,39,Miami,950,5
+20,24,Chicago,400,2
+21,27,New York,550,3
+22,42,Los Angeles,1300,8
+23,36,Houston,850,4
+24,,Miami,600,3
+25,32,Chicago,700,5
+26,44,New York,1400,9
+27,23,Los Angeles,480,2
+28,115,Houston,6000,1
+29,29,Miami,,4
+30,47,Chicago,1450,10
+31,38,New York,1000,6
+32,34,Los Angeles,820,5
+33,52,Houston,1550,9
+34,25,Miami,450,2
+35,30,Chicago,720,4
+36,,New York,980,6
+37,28,Los Angeles,580,3
+38,40,Houston,1150,7
+39,35,Miami,880,5
+40,31,Chicago,,4
+41,49,New York,1350,8
+42,26,Los Angeles,510,2
+43,37,Houston,920,6
+44,33,Miami,760,5
+45,45,Chicago,1250,7
+46,29,New York,620,3
+47,53,Los Angeles,1700,10
+48,,Houston,810,4
+49,27,Miami,530,2
+50,32,Chicago,740,5
