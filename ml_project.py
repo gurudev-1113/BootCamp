@@ -115,6 +115,18 @@ def main():
 
     print(predictions)
 
+#comparing model prediction with actual real answer
+    actual_wins=y_test.head(3).values
+    predicted_wins=predictions[:3]
+
+    for i in range(3):
+        predicted = round(predicted_wins[i])
+        actual = actual_wins[i]
+        difference=abs(actual-predicted)
+
+        print(f"Model Guessed: {predicted}")
+        print(f"Real Answer: {actual}")
+        print(f"Difference: {difference}")
 if __name__ == "__main__":
     main()
 
