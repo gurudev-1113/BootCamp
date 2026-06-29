@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoML Preprocessor & Modeler</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span class="logo-icon">📊</span>
+                <h2>AutoML Studio</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-target="step-load">
+                    <span class="nav-icon">📁</span> Load Dataset
+                </button>
+                <button class="nav-btn" data-target="step-preprocess" id="nav-btn-preprocess" disabled>
+                    <span class="nav-icon">⚙️</span> Preprocessing
+                </button>
+                <button class="nav-btn" data-target="step-features" id="nav-btn-features" disabled>
+                    <span class="nav-icon">🎯</span> Feature Selection
+                </button>
+                <button class="nav-btn" data-target="step-train" id="nav-btn-train" disabled>
+                    <span class="nav-icon">🧠</span> Train & Predict
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <p>Status: <span id="pipeline-status" class="status-badge idle">No Data</span></p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-title">
+                    <h1 id="page-title">Dataset Loader</h1>
+                    <p id="page-subtitle">Start by loading a CSV file to inspect the data.</p>
+                </div>
+            </header>
+
+            <!-- Error Banner -->
+            <div id="error-banner" class="alert alert-error hidden">
+                <span class="alert-icon">⚠️</span>
+                <span id="error-message" class="alert-text">An error occurred.</span>
+                <button class="alert-close" onclick="closeErrorBanner()">&times;</button>
+            </div>
+
+            <!-- Success Banner -->
+            <div id="success-banner" class="alert alert-success hidden">
+                <span class="alert-icon">✓</span>
+                <span id="success-message" class="alert-text">Operation completed successfully.</span>
+                <button class="alert-close" onclick="closeSuccessBanner()">&times;</button>
+            </div>
+
+            <div class="content-cards">
+                <!-- STEP 1: LOAD DATASET -->
+                <section id="step-load" class="step-section">
+                    <div class="grid grid-2-1">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Load Data</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="load-preset-container">
+                                    <label for="preset-select">Select a preset CSV file from workspace:</label>
+                                    <div class="select-group">
+                                        <select id="preset-select" class="form-control">
+                                            <option value="train.csv">train.csv (Baseball Wins Prediction)</option>
+                                            <option value="sales.csv">sales.csv (Sales Preprocessing)</option>
+                                        </select>
+                                        <button id="btn-load-preset" class="btn btn-primary">Load File</button>
+                                    </div>
+                                </div>
+                                <div class="divider"><span>OR</span></div>
+                                <div class="load-custom-container">
+                                    <label for="custom-file-path">Enter custom relative path to CSV file:</label>
+                                    <div class="input-group">
+                                        <input type="text" id="custom-file-path" class="form-control" placeholder="e.g. sales.csv" />
+                                        <button id="btn-load-custom" class="btn btn-secondary">Load Custom</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card info-card summary-card">
+                            <div class="card-body">
+                                <div class="stat-group">
+                                    <div class="stat-item">
+                                        <div class="stat-value" id="stat-rows">-</div>
+                                        <div class="stat-label">Total Rows</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-value" id="stat-cols">-</div>
+                                        <div class="stat-label">Total Columns</div>
+                                    </div>
+                                </div>
+                                <div id="dataset-loaded-indicator" class="hidden">
+                                    <p class="dataset-name-label">Current Dataset: <strong id="loaded-filename">None</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dataset Details (Hidden initially) -->
+                    <div id="dataset-details-container" class="hidden mt-4">
+                        <div class="grid grid-1-1">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3>Missing Values Distribution</h3>
+                                </div>
+                                <div class="card-body chart-container">
+                                    <canvas id="missing-chart"></canvas>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3>Columns & Skewness</h3>
+                                </div>
+                                <div class="card-body table-wrapper-small">
+                                    <table class="data-table" id="columns-info-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Column</th>
+                                                <th>Type</th>
+                                                <th>Missing Values</th>
+                                                <th>Skewness</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h3>Data Preview (First 10 Rows)</h3>
+                            </div>
+                            <div class="card-body table-wrapper">
+                                <table class="data-table" id="preview-table">
+                                    <thead></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- STEP 2: PREPROCESSING -->
+                <section id="step-preprocess" class="step-section hidden">
+                    <div class="grid grid-1-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Preprocessing Configurations</h3>
+                            </div>
+                            <div class="card-body">
+                                <form id="preprocess-form">
+                                    <!-- Missing values imputation -->
+                                    <div class="form-section">
+                                        <h4>1. Impute Missing Values</h4>
+                                        <div class="form-group">
+                                            <label for="impute-strategy">Imputation Strategy:</label>
+                                            <select id="impute-strategy" class="form-control mb-2">
+                                                <option value="median">Median (Default)</option>
+                                                <option value="mean">Mean</option>
+                                            </select>
+                                        </div>
+                                        <label class="section-label">Select columns to impute:</label>
+                                        <div class="checkbox-group" id="impute-cols-checkboxes">
+                                            <!-- Dynamically filled -->
+                                        </div>
+                                    </div>
+
+                                    <!-- Log transform -->
+                                    <div class="form-section mt-4">
+                                        <h4>2. Log Transform Skewed Distributions</h4>
+                                        <p class="form-help">Applies <code>log(1+x)</code> transformation to reduce skewness.</p>
+                                        <div class="checkbox-group" id="log-transform-checkboxes">
+                                            <!-- Dynamically filled -->
+                                        </div>
+                                    </div>
+
+                                    <!-- Target Encoding -->
+                                    <div class="form-section mt-4">
+                                        <h4>3. Target Encoding</h4>
+                                        <p class="form-help">Encodes high-cardinality categorical data using mean of target variable.</p>
+                                        
+                                        <div class="form-check mb-2">
+                                            <input type="checkbox" id="create-team-id-checkbox" class="form-check-input" />
+                                            <label for="create-team-id-checkbox" class="form-check-label">Create dummy high-cardinality "Team_ID" (from <code>ml_project.py</code>)</label>
+                                        </div>
+                                        
+                                        <div class="grid grid-1-1 mt-2">
+                                            <div class="form-group">
+                                                <label for="target-encode-col">Categorical Column:</label>
+                                                <select id="target-encode-col" class="form-control">
+                                                    <option value="">-- Select Column --</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="target-encode-y">Target Column:</label>
+                                                <select id="target-encode-y" class="form-control">
+                                                    <option value="">-- Select Target --</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary btn-block mt-4">Apply Preprocessing Pipeline</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Preprocess Results -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Preprocessed Data Preview</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="preprocess-empty-state" class="empty-state">
+                                    <p>Configure and apply the pipeline to view results.</p>
+                                </div>
+                                <div id="preprocess-results-container" class="hidden">
+                                    <div class="stat-group mb-4">
+                                        <div class="stat-item">
+                                            <div class="stat-value" id="p-stat-rows">-</div>
+                                            <div class="stat-label">Processed Rows</div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-value" id="p-stat-cols">-</div>
+                                            <div class="stat-label">Processed Columns</div>
+                                        </div>
+                                    </div>
+                                    <div class="table-wrapper">
+                                        <table class="data-table" id="preprocess-preview-table">
+                                            <thead></thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- STEP 3: FEATURE SELECTION -->
+                <section id="step-features" class="step-section hidden">
+                    <div class="grid grid-1-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Mutual Information Selection</h3>
+                            </div>
+                            <div class="card-body">
+                                <form id="feature-selection-form">
+                                    <div class="form-group">
+                                        <label for="select-target">Target Variable (Y):</label>
+                                        <select id="select-target" class="form-control" required>
+                                            <!-- Dynamically filled -->
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group mt-3">
+                                        <label class="section-label">Select Feature Candidates (X):</label>
+                                        <div class="checkbox-group" id="feature-candidates-checkboxes">
+                                            <!-- Dynamically filled -->
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group mt-3">
+                                        <label for="select-k">Number of best features to select (K):</label>
+                                        <input type="number" id="select-k" class="form-control" value="2" min="1" required />
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary btn-block mt-4">Compute Best Features</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Feature Selection Results</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="feature-empty-state" class="empty-state">
+                                    <p>Select variables and run evaluation to see scores.</p>
+                                </div>
+                                <div id="feature-results-container" class="hidden">
+                                    <div class="best-features-alert">
+                                        <h5>Selected Best Features:</h5>
+                                        <div class="tag-container" id="best-features-tags"></div>
+                                    </div>
+                                    <div class="chart-container mt-4">
+                                        <canvas id="features-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- STEP 4: TRAIN & PREDICT -->
+                <section id="step-train" class="step-section hidden">
+                    <div class="grid grid-1-2">
+                        <!-- Model Training Parameters -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Train Linear Regression Model</h3>
+                            </div>
+                            <div class="card-body">
+                                <form id="train-form">
+                                    <div class="form-group">
+                                        <label>Selected Features for Training:</label>
+                                        <div class="tag-container mb-3" id="train-features-display">
+                                            <span class="placeholder-tag">No features selected yet</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label>Target Variable:</label>
+                                        <div class="target-display" id="train-target-display">-</div>
+                                    </div>
+
+                                    <div class="grid grid-1-1 mt-3">
+                                        <div class="form-group">
+                                            <label for="test-split-slider">Test Split Ratio: <span id="test-split-val">20%</span></label>
+                                            <input type="range" id="test-split-slider" min="10" max="50" value="20" class="slider" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="random-state-input">Random State Seed:</label>
+                                            <input type="number" id="random-state-input" value="42" class="form-control" />
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary btn-block mt-4">Train Model</button>
+                                </form>
+
+                                <div id="predictor-card-container" class="hidden mt-4 pt-4 border-top">
+                                    <h4 class="predictor-title">Interactive Win Predictor</h4>
+                                    <p class="form-help">Enter values for the selected features to estimate target wins.</p>
+                                    <form id="prediction-form" class="mt-3">
+                                        <div id="dynamic-prediction-inputs"></div>
+                                        <button type="submit" class="btn btn-success btn-block mt-3">Predict wins (W)</button>
+                                    </form>
+
+                                    <div id="prediction-result" class="prediction-result-display hidden">
+                                        <h5>Predicted Wins:</h5>
+                                        <div class="prediction-value" id="predicted-value">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Training Evaluation Results -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Model Performance & Evaluation</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="train-empty-state" class="empty-state">
+                                    <p>Train the model to see evaluation metrics.</p>
+                                </div>
+                                <div id="train-results-container" class="hidden">
+                                    <!-- Performance Metrics Cards -->
+                                    <div class="metrics-grid">
+                                        <div class="metric-card">
+                                            <div class="metric-value" id="metric-r2">-</div>
+                                            <div class="metric-label">R-squared (R²)</div>
+                                        </div>
+                                        <div class="metric-card">
+                                            <div class="metric-value" id="metric-rmse">-</div>
+                                            <div class="metric-label">RMSE</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="model-equation mt-4">
+                                        <h5>Model Equation:</h5>
+                                        <div class="equation-text" id="model-equation-text">-</div>
+                                    </div>
+
+                                    <div class="chart-container mt-4">
+                                        <h5 class="chart-title">Actual vs. Predicted Comparison</h5>
+                                        <canvas id="prediction-chart"></canvas>
+                                    </div>
+
+                                    <div class="comparison-table-section mt-4">
+                                        <h5>Detailed Predictions Sample</h5>
+                                        <div class="table-wrapper-small">
+                                            <table class="data-table" id="comparison-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Actual Wins</th>
+                                                        <th>Predicted Wins</th>
+                                                        <th>Abs Difference</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
