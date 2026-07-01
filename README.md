@@ -1,92 +1,115 @@
-# Machine Learning Data Preprocessing Project
+﻿# Bootcamp - Python and ML Projects
 
-## Overview
-
-This project demonstrates a complete machine learning preprocessing pipeline using Python and Scikit-learn.
-
-The workflow includes:
-
-* Loading a dataset
-* Handling missing values
-* Log transformation for skewed data
-* Creating a high-cardinality categorical feature
-* Target Encoding
-* Feature Selection using Mutual Information
-* Splitting data into training and testing sets
-* Training a Linear Regression model
-* Comparing predicted values with actual values
+A structured bootcamp workspace with Python and machine learning exercises, organized by day.
 
 ---
 
-## Dataset
+## Project Structure
 
-The project uses the **train.csv** dataset.
-
-Target Variable:
-
-* **W** (Wins)
-
-Features Used:
-
-* R (Runs)
-* HR (Home Runs)
-* SO (Strikeouts)
-* SB (Stolen Bases)
-
----
-
-## Technologies Used
-
-* Python
-* Pandas
-* NumPy
-* Scikit-learn
-* Category Encoders
-
----
-
-## Project Workflow
-
-1. Load dataset
-2. Handle missing values using Median Imputation
-3. Apply Log Transformation to reduce skewness
-4. Create a high-cardinality categorical feature
-5. Encode categorical data using Target Encoding
-6. Perform Feature Selection using Mutual Information
-7. Split data into Train/Test sets
-8. Train a Linear Regression model
-9. Predict target values
-10. Compare predictions with actual values
+`
+Bootcamp/
+|
+|-- day2_and_3/              <- Day 2 and 3: ML Preprocessing + Flask Apps
+|   |-- app.py               <- Flask web application
+|   |-- bussbooking.py       <- Bus booking system
+|   |-- EDA.py               <- Exploratory Data Analysis
+|   |-- ml_project.py        <- ML pipeline (Linear Regression)
+|   |-- d1.ipynb             <- Jupyter notebook
+|   |-- sales.csv            <- Sales dataset
+|   |-- train.csv            <- Training dataset
+|   |-- requirements.txt     <- Python dependencies
+|   +-- README.md            <- Day 2 and 3 notes
+|
+|-- day4/                    <- Day 4: Disease Prediction ML
+|   |-- disease.py           <- Disease prediction pipeline
+|   |-- disease_prediction.csv <- Disease dataset
+|   +-- requirements.txt     <- Python dependencies
+|
+|-- static/                  <- Frontend static files
+|   |-- index.html
+|   |-- styles.css
+|   +-- app.js
+|
+|-- venv/                    <- Shared Python virtual environment (DO NOT EDIT)
+|-- .gitignore               <- Git ignore rules
++-- README.md                <- This file
+`
 
 ---
 
-## Installation
+## Setup (First Time Only)
 
-Install the required libraries:
+### Step 1: Activate the Virtual Environment
 
-```bash
-pip install -r requirements.txt
-```
+PowerShell:
+`
+.\venv\Scripts\Activate.ps1
+`
+
+Command Prompt:
+`
+venv\Scripts\activate.bat
+`
+
+You will see (venv) at the start of your terminal prompt when active.
+
+### Step 2: Install Dependencies
+
+For Day 2 and 3:
+`
+pip install -r day2_and_3\requirements.txt
+`
+
+For Day 4:
+`
+pip install -r day4\requirements.txt
+`
 
 ---
 
-## Run the Project
+## Running the Projects
 
-```bash
-python ml_project.py
-```
+Day 2 and 3 - ML Pipeline:
+`
+python day2_and_3\ml_project.py
+`
+
+Day 2 and 3 - Flask App:
+`
+python day2_and_3\app.py
+`
+
+Day 4 - Disease Prediction:
+`
+python day4\disease.py
+`
 
 ---
 
-## Sample Output
+## Environment Variables
 
-* Dataset Loaded
-* Missing Values Imputed
-* Log Transformation Applied
-* Target Encoding Completed
-* Best Features Selected
-* Linear Regression Model Trained
-* Predictions Generated
+Copy .env.example to .env and fill in required values:
+`
+copy .env.example .env
+`
+
+IMPORTANT: Never commit your .env file. It is already listed in .gitignore.
+
+---
+
+## Common Mistakes to Avoid
+
+- Wrong: Creating venv inside a project folder
+  Correct: One shared venv at the root level
+
+- Wrong: Putting project files inside venv/
+  Correct: Project files go in day2_and_3/, day4/, etc.
+
+- Wrong: Committing venv/ to Git
+  Correct: venv/ is already listed in .gitignore
+
+- Wrong: Folder names with spaces (day2 and 3)
+  Correct: Use underscores (day2_and_3)
 
 ---
 
